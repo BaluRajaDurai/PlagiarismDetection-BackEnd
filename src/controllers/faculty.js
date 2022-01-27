@@ -3,6 +3,7 @@ const Topic = require("../models/topic");
 const SubmittedTopic = require("../models/submittedtopic");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
+const axios = require("axios");
 
 // sending faculty information using nodemailer
 const sendEmail = (email, name, password) => {
@@ -38,6 +39,7 @@ const sendEmail = (email, name, password) => {
   });
 };
 
+// controller for add faculty
 exports.addFaculty = async (req, reply) => {
   try {
     // console.log(req.body)
@@ -62,6 +64,7 @@ exports.addFaculty = async (req, reply) => {
   }
 };
 
+// controller for faculty login
 exports.facultyLogin = async (req, reply) => {
   try {
     // checking if the email in db
@@ -136,7 +139,7 @@ exports.facultyDelete = async (req, reply) => {
   try {
     const id = req.params.id;
     const facultydelete = await Faculty.findOneAndDelete({ facultyemail: id });
-    reply.code(200).send({facultydelete, message: "Faculty Deleted!"});
+    reply.code(200).send({ facultydelete, message: "Faculty Deleted!" });
   } catch (e) {
     reply.code(500).send(e);
   }
@@ -166,16 +169,16 @@ exports.topicDetail = async (req, reply) => {
   }
 };
 
-exports.singleTopic= async (req, reply) => {
+// controller for single topic
+exports.singleTopic = async (req, reply) => {
   try {
     const id = req.params.id;
-    const singletopic = await Topic.find({ _id:id });
+    const singletopic = await Topic.find({ _id: id });
     reply.code(200).send(singletopic);
   } catch (e) {
     reply.code(500).send(e);
   }
 };
-
 
 //controller for deleting topic
 exports.topicDelete = async (req, reply) => {
@@ -224,12 +227,13 @@ exports.topicSubmitted = async (req, reply) => {
   }
 };
 
+// controller for adding comment
 exports.addComment = async (req, reply) => {
   try {
     const id = req.params.id;
     const comment = await SubmittedTopic.findByIdAndUpdate(
-      { _id: id},
-      { $set: { comment : req.body.comment} },
+      { _id: id },
+      { $set: { comment: req.body.comment } }
     );
     if (comment) {
       reply.send({ comment, message: "Comment Added Successfully" });
@@ -239,5 +243,48 @@ exports.addComment = async (req, reply) => {
   } catch (e) {
     console.log(e);
     reply.send({ error: "Update Failed" });
+  }
+};
+
+// controller for check plagiarism
+exports.checkPlag = async (req, reply) => {
+  try {
+
+    const id = req.params.id;
+
+    let plag = [];
+  
+    axios
+      .get("http://localhost:8000/check_plag/" + id)
+      .then((response) => {
+        Object.keys(response.data.output).forEach((key) => {
+          
+          let obj = new Object();
+
+          obj.email = key;
+          obj.percentage = response.data.output[key].plagPercentage;
+
+          plag.push(obj);
+        });
+
+        plag.map(async function (e) {
+          await SubmittedTopic.findOneAndUpdate(
+            { studentemail: e.email, topicid: id },
+            { $set: { result: e.percentage } }
+          );
+        });
+
+        reply.send({ message: "Successfully checked plagiarism!" });
+
+      })
+      .catch((error) => {
+
+        console.log(error);
+        reply.send({ error: "Need more than one student to check plagiarism!" });
+
+      });
+  } catch (e) {
+    console.log(e);
+    reply.send({ error: "Unable to check plagiarism!" });
   }
 };

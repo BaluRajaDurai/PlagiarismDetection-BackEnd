@@ -2,6 +2,7 @@
 const mongoose = require('mongoose')
 const adminSchema =new mongoose.Schema({
 
+    //report details
     facultyname: String,
     facultyemail: String,
     subject:String,

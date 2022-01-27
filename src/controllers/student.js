@@ -161,58 +161,53 @@ exports.studentprofileEdit = async (req, reply) => {
   }
 };
 
-
+// controller for student home page topic
 exports.studentTopic = async (req, reply) => {
-
   try {
     const studentTopic = await Student.aggregate([
-      { $lookup:
-         {
-           from: 'topics',
-           localField: 'studentbranch',
-           foreignField: 'branch',
-           as: 'student_topic'
-         }
-       }
-      ])
-      // console.log(Topic)
-      // console.log(studentTopic)
+      {
+        $lookup: {
+          from: "topics",
+          localField: "studentbranch",
+          foreignField: "branch",
+          as: "student_topic",
+        },
+      },
+    ]);
+    // console.log(Topic)
+    // console.log(studentTopic)
     reply.code(200).send(studentTopic);
   } catch (e) {
     reply.code(500).send(e);
   }
-
 };
 
 //controller for submitted topic
 exports.topicSubmisson = async (req, reply) => {
   try {
-      const subtopic = new SubmittedTopic(req.body);
-      await subtopic.save();
-      reply.send({ subtopic, message: "Topic Submitted!" });
-   
+    const subtopic = new SubmittedTopic(req.body);
+    await subtopic.save();
+    reply.send({ subtopic, message: "Topic Submitted!" });
   } catch (error) {
     console.log(error);
     reply.send({ error: "Creation Failed" });
   }
 };
 
+// controller for verify submitted topics
 exports.submitVerify = async (req, reply) => {
   try {
-    
     const id = req.params.id;
 
     const submitted = await Topic.updateOne(
-      { _id: id},
-      { $push: { ifSubmitted : [req.body.studentemail] } }
+      { _id: id },
+      { $push: { ifSubmitted: [req.body.studentemail] } }
     );
     if (submitted) {
       reply.send({ submitted, message: "Topic Submisson updated" });
     } else {
       reply.send({ error: "No Topic Found" });
     }
-   
-
   } catch (e) {
     reply.code(500).send(e);
   }
@@ -228,6 +223,3 @@ exports.submittedDetail = async (req, reply) => {
     reply.code(500).send(e);
   }
 };
-
-
-

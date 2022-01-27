@@ -13,6 +13,7 @@ const submittedtopicSchema =new mongoose.Schema({
     subjectname:String,
     topicid:String,
     comment:String,
+    result:String,
     fname:String,
     femail:String
 

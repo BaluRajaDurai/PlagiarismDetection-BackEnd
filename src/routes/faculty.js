@@ -1,5 +1,5 @@
 // declaring the routes for faculty
-const { addFaculty,facultyLogin,facultyDetail,facultyProfile,profileEdit,facultyDelete,addTopic,topicDetail,topicDelete,topicEdit,singleTopic,addComment,topicSubmitted} = require("../controllers/faculty")
+const { addFaculty,facultyLogin,facultyDetail,facultyProfile,profileEdit,facultyDelete,addTopic,topicDetail,topicDelete,topicEdit,singleTopic,addComment,topicSubmitted,checkPlag} = require("../controllers/faculty")
 module.exports = async function (fastify, opts, done) {
 
     fastify.post('/addfaculty',addFaculty)
@@ -27,6 +27,8 @@ module.exports = async function (fastify, opts, done) {
     fastify.put('/addcomment/:id',addComment)
 
     fastify.get('/topicsubmitted/:id',topicSubmitted)
+
+    fastify.get('/checkplagiarism/:id',checkPlag)
 
     done();
 }
